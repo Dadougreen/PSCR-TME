@@ -1,0 +1,125 @@
+#include"HashMap.hpp"
+#include <iostream>
+#include <fstream>
+#include <regex>
+#include <chrono>
+#include <vector>
+#include <cstring>
+
+
+
+
+int main () {
+	using namespace std;
+	using namespace std::chrono;
+	using namespace pr;
+	//EX 2 :
+	//vector<string> v;
+	//EX 3 :
+	vector<pair<string,int>> v;
+	//EX 6 :
+
+	HashMap<std::string, int> Map(24000);
+
+	ifstream input = ifstream("WarAndPeace.txt");
+
+	auto start = steady_clock::now();
+	cout << "Parsing War and Peace" << endl;
+
+	size_t nombre_lu = 0;
+	// prochain mot lu
+	string word;
+	// une regex qui reconnait les caractères anormaux (négation des lettres)
+	regex re( R"([^a-zA-Z])");
+	while (input >> word) {
+		// élimine la ponctuation et les caractères spéciaux
+		word = regex_replace ( word, re, "");
+		// passe en lowercase
+		transform(word.begin(),word.end(),word.begin(),::tolower);
+
+		// word est maintenant "tout propre"
+
+		int* entryCount = Map.get(word);
+		if (entryCount) {
+			(*entryCount)++; // Incrémente le compteur existant
+
+		} else {
+			Map.put(word, 1); // Crée une nouvelle entrée avec une occurrence de 1
+		}
+
+
+		if (nombre_lu % 100 == 0)
+			// on affiche un mot "propre" sur 100
+			cout << nombre_lu << ": "<< word << endl;
+		nombre_lu++;
+
+		/*
+		 * EX2 :
+		bool uniq = true;
+		for(size_t i=0; i< v.size() ; i=i+1)
+		{
+			if(word==v[i])
+				{
+					uniq = false;
+					break;
+				}
+
+		}
+
+		if(uniq) v.push_back(word);
+		uniq=true;
+
+		cout<<"le vecteur fait : "<<v.size()<<endl;
+		*/
+
+		/*
+		 * EX3 :
+		bool uniq = true;
+				for(size_t i=0; i< v.size() ; i=i+1)
+				{
+
+					if(word==v[i].first)
+						{
+							uniq = false;
+							v[i].second++;
+							break;
+						}
+				}
+
+		if(uniq) v.push_back(std::make_pair(word,1));
+		uniq=true;
+		*/
+
+	}
+
+	/*
+			 * EX3 :
+	for(size_t i=0; i< v.size() ; i=i+1)
+
+	{
+		if(v[i].first == "war" || v[i].first == "peace" || v[i].first=="toto"){
+			cout<<v[i].first<<", occurence : "<<v[i].second<<endl;
+		}
+	}
+	*/
+
+	//Pas optimiser, Complexité en O(n²)
+
+	Map.show();
+
+	input.close();
+
+	cout << "Finished Parsing War and Peace" << endl;
+
+	auto end = steady_clock::now();
+    cout << "Parsing took "
+              << duration_cast<milliseconds>(end - start).count()
+              << "ms.\n";
+
+    cout << "Found a total of " << nombre_lu << " words." << endl;
+
+
+    return 0;
+}
+
+
