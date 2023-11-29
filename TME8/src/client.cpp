@@ -1,80 +1,50 @@
-#include "ServerSocket.h"
 #include <iostream>
 #include <unistd.h>
-#include <string>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
+#define PORTSERV 6993
+#define h_addr h_addr_list[0] /* definition du champs h_addr */
 
-int main00() {
-	pr::Socket sock;
-	sock.connect("localhost", 1664);
-	int N=42;
-	write(sock.getFD(),&N,sizeof(int));
-	read(sock.getFD(),&N,sizeof(int));
-	std::cout << N << std::endl;
-	return 0;
-}
+int main(int argc, char *argv[]) {
+	struct sockaddr_in dest; /* Nom du serveur */
 
-
-// avec controle
-int main0() {
-
-	pr::Socket sock;
-
-	sock.connect("localhost", 1664);
-
-	if (sock.isOpen()) {
-		int fd = sock.getFD();
-		int i = 10;
-		ssize_t msz = sizeof(int);
-		if (write(fd, &i, msz) < msz) {
-			perror("write");
-		}
-		std::cout << "envoyé =" << i << std::endl;
-		int lu;
-		auto nblu = read(fd, &lu, msz);
-		if (nblu == 0) {
-			std::cout << "Fin connexion par serveur" << std::endl;
-		} else if (nblu < msz) {
-			perror("read");
-		}
-		std::cout << "lu =" << lu << std::endl;
+	int sock;
+	int fromlen = sizeof(dest);
+	int msg;
+	int reponse;
+	if (argc != 2) {
+		fprintf(stderr, "Usage : %s machine\n", argv[0]);
+		exit(1);
 	}
-
-	return 0;
-}
-
-
-// avec une boucle, on attend un 0
-int main() {
-
-	pr::Socket sock;
-
-	sock.connect("localhost", 1664);
-
-	if (sock.isOpen()) {
-		int fd = sock.getFD();
-
-		ssize_t msz = sizeof(int);
-		for (int i = 10; i >= 0; i--) {
-			if (write(fd, &i, msz) < msz) {
-				perror("write");
-				break;
-			}
-			std::cout << "envoyé =" << i << std::endl;
-
-			int lu;
-			auto nblu = read(fd, &lu, msz);
-			if (nblu == 0) {
-				std::cout << "Fin connexion par serveur" << std::endl;
-				break;
-			} else if (nblu < msz) {
-				perror("read");
-				break;
-			}
-			std::cout << "lu =" << lu << std::endl;
-		}
+	if ((sock = socket(AF_INET,SOCK_STREAM,0)) == -1) {
+		perror("socket");
+		exit(1);
 	}
+	/* remplir la structure dest */
+	dest.sin_port = htons(PORTSERV);
+	dest.sin_addr.s_addr = INADDR_ANY;
+	dest.sin_family = AF_INET;
 
-	return 0;
+	/* Etablir la connexion */
+	if (connect(sock, (struct sockaddr *) &dest, sizeof(dest)) == -1) {
+		perror("connect"); exit(1);
+	}
+	msg = 2;
+	/* Envoyer le message (un entier ici )*/
+	if (write(sock,&msg,sizeof(msg)) == -1) {
+		perror("write"); exit(1);
+	}
+	/* Recevoir la reponse */
+	if (read(sock,&reponse,sizeof(reponse)) == -1) {
+		perror("recvfrom"); exit(1);
+	}
+	printf("Reponse : %d\n", reponse);
+	/* Fermer la connexion */
+	shutdown(sock,2);
+	close(sock);
+	return(0);
 }
 
