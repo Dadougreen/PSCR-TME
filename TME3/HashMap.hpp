@@ -84,7 +84,7 @@ public:
     }
 
     iterateur end() {
-
+	return iterator(buckets.end(),buckets.end(),buckets.front().end()); 
     }
 
     // Obtient la valeur associée à une clé
