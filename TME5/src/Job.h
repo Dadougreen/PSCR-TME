@@ -1,5 +1,10 @@
-#pragma once
+#include <cstdlib>
+#include <iostream>
+#include <chrono>
+#include <thread>
 
+#pragma once
+using namespace std;
 namespace pr {
 
 class Job {
@@ -10,7 +15,7 @@ public:
 
 // Job concret : exemple
 
-/*
+
 class SleepJob : public Job {
 	int calcul (int v) {
 		std::cout << "Computing for arg =" << v << std::endl;
@@ -29,6 +34,6 @@ public :
 	}
 	~SleepJob(){}
 };
-*/
+
 
 }
