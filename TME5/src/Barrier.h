@@ -1,25 +1,33 @@
 #pragma once
 
-#include "Pool.h"
+#include <mutex>
+#include <condition_variable>
 
-#include <vector>
-#include <thread>
-
-namespace pr {
+using namespace std;
 
 class Barrier {
-	Pool p;
+    int counter;
+    const int MAX;
+    mutex m;
+    condition_variable cv;
 
-	public:
-	Barrier() : p() {};
-	int todo (nbJob)
-	{
-		for(int i =0 ; i<nbJob; i=i+1)
-		{
-			p.submit(new Job())
-		}
-	}
-	~Barrier();
+public:
+    Barrier(int max) : counter(0), MAX(max) {}
+
+    void done() {
+        unique_lock<mutex> l(m);
+        counter++;
+        if (counter == MAX) {
+            cv.notify_all();
+        }
+    }
+
+    void waitFor() {
+        unique_lock<mutex> l(m);
+        while (counter != MAX) {
+            cv.wait(l);
+        }
+    }
 };
 
-}
+
