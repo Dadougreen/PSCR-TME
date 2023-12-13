@@ -42,14 +42,11 @@ public:
 		}
 		threads.clear();
 	}
-	~Pool();
+	~Pool(){
+		stop();
+	}
 };
 
 }
 
-/*
-class Pool {
-public:
-	Pool();
-	virtual ~Pool();
-};*/
+
